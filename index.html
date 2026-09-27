@@ -153,6 +153,20 @@ table.st td.r,table.st th.r{text-align:right}
 .known{margin-top:12px}
 .known ul{margin:6px 0 0;padding-left:18px;font-size:14px}
 
+/* places */
+.places{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:900px){.places{grid-template-columns:1fr}}
+.place .pname{font-family:var(--display);font-size:20px;font-weight:700;margin-top:2px}
+.place .parea{font-size:13px;color:var(--dim)}
+.prow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.prow select,.psearch input{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--ink);flex:1 1 180px;min-width:0}
+.psearch{display:flex;gap:8px;margin-top:8px}
+.presults{display:grid;gap:4px;margin-top:6px}
+.presults button{font:inherit;font-size:13px;text-align:left;padding:7px 9px;border-radius:7px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.presults button:hover{border-color:var(--acc)}
+.presults small{color:var(--dim)}
+.tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;margin-left:4px;vertical-align:1px}
+.tag.local{background:var(--acc-soft);color:var(--acc)} .tag.same{background:var(--panel-2);color:var(--ink)} .tag.other{background:var(--panel-2);color:var(--faint)}
 /* misc from v1 */
 .hot{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
 .hl{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
@@ -192,7 +206,7 @@ footer{margin-top:28px;font-size:12px;color:var(--faint);border-top:1px solid va
 
 <header class="top">
   <div class="in">
-    <div class="brand"><h1>TKO <b>Survivor</b> Flood 2026</h1><span>บ้าน: แคราย กระทุ่มแบน · ที่ทำงาน: ไบเทค บางนา</span></div>
+    <div class="brand"><h1>TKO <b>Survivor</b> Flood 2026</h1><span id="brand-sub">—</span></div>
     <div class="status">
       <span class="src" id="s-radar"><i></i>เรดาร์</span>
       <span class="src" id="s-model"><i></i>พยากรณ์ 4 แหล่ง</span>
@@ -205,6 +219,33 @@ footer{margin-top:28px;font-size:12px;color:var(--faint);border-top:1px solid va
 
 <div class="wrap">
   <div class="mode" id="mode" hidden></div>
+
+  <!-- PLACES -->
+  <section id="places">
+    <div class="sec-head"><h2>พื้นที่ที่ติดตาม</h2><small>เลือกจากรายการ ค้นหาชื่อสถานที่ หรือแตะบนแผนที่</small></div>
+    <div class="places">
+      <div class="panel place" id="pl-home">
+        <div class="label">บ้าน</div>
+        <div class="pname" id="home-name">—</div><div class="parea" id="home-area">—</div>
+        <div class="prow">
+          <select id="home-sel" aria-label="เลือกพื้นที่บ้าน"></select>
+          <button class="btn" type="button" id="home-map">แตะบนแผนที่</button>
+        </div>
+        <form class="psearch" id="home-form"><input id="home-q" type="search" placeholder="ค้นหา เช่น วัด โรงเรียน หมู่บ้าน ตำบล" aria-label="ค้นหาสถานที่บ้าน"><button class="btn" type="submit">ค้นหา</button></form>
+        <div class="presults" id="home-res"></div>
+      </div>
+      <div class="panel place" id="pl-work">
+        <div class="label">ที่ทำงาน</div>
+        <div class="pname" id="work-name">—</div><div class="parea" id="work-area">—</div>
+        <div class="prow">
+          <select id="work-sel" aria-label="เลือกพื้นที่ที่ทำงาน"></select>
+          <button class="btn" type="button" id="work-map">แตะบนแผนที่</button>
+        </div>
+        <form class="psearch" id="work-form"><input id="work-q" type="search" placeholder="ค้นหา เช่น อาคาร ห้าง ถนน" aria-label="ค้นหาสถานที่ที่ทำงาน"><button class="btn" type="submit">ค้นหา</button></form>
+        <div class="presults" id="work-res"></div>
+      </div>
+    </div>
+  </section>
 
   <!-- ANALYSIS -->
   <section id="analysis">
@@ -249,19 +290,18 @@ footer{margin-top:28px;font-size:12px;color:var(--faint);border-top:1px solid va
       <div class="side">
         <div class="panel">
           <div class="label">ฝนตอนนี้ (จากเรดาร์)</div>
-          <div class="rrow"><span>บ้าน แคราย</span><span class="intens" id="rn-home">—</span></div>
-          <div class="rrow"><span>ไบเทค บางนา</span><span class="intens" id="rn-work">—</span></div>
+          <div class="rrow"><span id="rl-home">บ้าน</span><span class="intens" id="rn-home">—</span></div>
+          <div class="rrow"><span id="rl-work">ที่ทำงาน</span><span class="intens" id="rn-work">—</span></div>
           <div class="rrow"><span>พื้นที่ กทม.–ปริมณฑลที่มีฝน</span><span class="num" id="rn-cov">—</span></div>
           <div class="rrow"><span>กลุ่มฝนเคลื่อนไป</span><span id="rn-mv">—</span></div>
           <div class="rrow"><span>ฝนหนักใกล้บ้านสุด</span><span id="rn-nh">—</span></div>
-          <div class="rrow"><span>ฝนหนักใกล้ไบเทคสุด</span><span id="rn-nw">—</span></div>
+          <div class="rrow"><span>ฝนหนักใกล้ที่ทำงานสุด</span><span id="rn-nw">—</span></div>
           <p class="note" id="rn-note">ประเมินจากสีของภาพเรดาร์ ความแม่นยำประมาณ 1–2 กม.</p>
         </div>
         <div class="panel">
-          <div class="label">ตำแหน่งบ้าน</div>
-          <p class="note" style="margin-top:4px">ตั้งไว้โดยประมาณที่ ต.แคราย กดปุ่มแล้วแตะบนแผนที่ตรงบ้านจริง ระบบจะคำนวณใหม่ทั้งหมด</p>
+          <div class="label">แผนที่</div>
+          <p class="note" id="mapmode" style="margin-top:4px">จุดเขียว = บ้าน · จุดส้ม = ที่ทำงาน · เปลี่ยนพื้นที่ได้ที่ “พื้นที่ที่ติดตาม” ด้านบน</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-            <button class="btn" type="button" id="sethome">ตั้งตำแหน่งบ้าน</button>
             <button class="btn" type="button" id="showroutes">แสดงเส้นทาง</button>
           </div>
         </div>
@@ -275,7 +315,7 @@ footer{margin-top:28px;font-size:12px;color:var(--faint);border-top:1px solid va
       <h2>เทียบปริมาณฝนจาก 4 แหล่งพยากรณ์</h2>
       <div class="seg" role="group" aria-label="เลือกพื้นที่">
         <button type="button" id="loc-home" aria-pressed="true">บ้าน</button>
-        <button type="button" id="loc-work" aria-pressed="false">ไบเทค</button>
+        <button type="button" id="loc-work" aria-pressed="false">ที่ทำงาน</button>
       </div>
     </div>
     <div class="mcards" id="mcards"></div>
@@ -290,18 +330,18 @@ footer{margin-top:28px;font-size:12px;color:var(--faint);border-top:1px solid va
   <section id="water">
     <div class="sec-head"><h2>ระดับน้ำในคลองและแม่น้ำ</h2><small id="wl-time">สถานีโทรมาตร สสน. / กรมชลประทาน</small></div>
     <div class="st-wrap">
-      <div class="panel"><h3>รอบบ้าน แคราย</h3><div class="tbl"><table class="st" id="st-home"></table></div></div>
-      <div class="panel"><h3>รอบที่ทำงาน ไบเทค บางนา</h3><div class="tbl"><table class="st" id="st-work"></table></div></div>
+      <div class="panel"><h3 id="st-home-h">รอบบ้าน</h3><p class="note" id="st-home-n"></p><div class="tbl"><table class="st" id="st-home"></table></div></div>
+      <div class="panel"><h3 id="st-work-h">รอบที่ทำงาน</h3><p class="note" id="st-work-n"></p><div class="tbl"><table class="st" id="st-work"></table></div></div>
     </div>
-    <p class="note">% ความจุลำน้ำ = ระดับน้ำเทียบกับระดับตลิ่ง เกิน 100% คือน้ำล้นตลิ่ง ขีดสีขาวบนแถบคือจุด 100% · คลองย่อยของ กทม. เช่น คลองบางนา คลองประเวศฯ ไม่มีในฐานข้อมูลนี้ ดูได้ที่เว็บระบายน้ำ กทม.</p>
+    <p class="note">ป้าย <span class="tag local">ในพื้นที่</span> = ห่างไม่เกิน 5 กม. · <span class="tag same">อำเภอเดียวกัน</span> · <span class="tag other">พื้นที่อื่น</span> = คนละอำเภอ ใช้ดูแนวโน้มเท่านั้น การวิเคราะห์นับเฉพาะสถานีในรัศมี 10 กม. · % ความจุลำน้ำ = ระดับน้ำเทียบกับระดับตลิ่ง เกิน 100% คือน้ำล้นตลิ่ง ขีดสีขาวบนแถบคือจุด 100% · คลองย่อยของ กทม. เช่น คลองบางนา คลองประเวศฯ ไม่มีในฐานข้อมูลนี้ ดูได้ที่เว็บระบายน้ำ กทม.</p>
   </section>
 
   <!-- ROUTES -->
   <section id="routes">
-    <div class="sec-head"><h2>เส้นทางไปทำงาน แคราย → ไบเทค</h2><small>ประเมินจากเรดาร์ตามแนวเส้นทาง + รายงานน้ำท่วมถนน</small></div>
+    <div class="sec-head"><h2 id="rt-h">เส้นทางไปทำงาน</h2><small>ประเมินจากเรดาร์ตามแนวเส้นทาง + รายงานน้ำท่วมถนน</small></div>
     <div class="routes" id="rts"></div>
     <div class="panel known">
-      <h3>จุดน้ำท่วมถนนที่รายงานใกล้เส้นทาง (เช้า 27 ก.ย.)</h3>
+      <h3>จุดน้ำท่วมถนนที่รายงานฝั่งบางนา–สุขุมวิท (เช้า 27 ก.ย.)</h3>
       <ul>
         <li><b>บางนา-ตราด แยกบางนาขาออก</b> น้ำขัง 15–20 ซม. ใกล้ไบเทคมาก</li>
         <li><b>สุขุมวิท 101/1 ซอย 3</b> เขตพระโขนง 15–20 ซม.</li>
@@ -381,25 +421,26 @@ const SNAP={
       gfs:[0,0,0.3,0.5,0,0.1,0.3,0.2,0.1,0.9,0.9,0.9,0.3,0.3,0.1,0.4,0.2,0,0.2,1.2,0.6,1,1.1,0,0,0,0,0,0.4,0,0,0,0,0,0,0,0,0.2,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0,0.2,0.4,0.4,0,0,0,0,0,0,0,0,0,1.1,2.2,2,1.5],
       icon:[0.7,0.7,0.3,0.4,0.8,0.5,0.7,0.6,2.3,4.5,3.4,3.3,1.2,1.7,1,1.3,1.4,0.5,0.7,0.3,0,0.2,0.7,0.7,1,2.2,1.7,2.6,4.6,5.2,2.2,2.4,1.9,1.3,0.5,0.7,0.7,0.6,0.7,0.5,1.1,0.9,0.6,0,0.4,0.1,0,0.2,0.5,0.5,0.6,0.7,0.5,0.4,0.5,0,0,0.1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       jma:[2.2,2.2,1.3,1.3,1.3,1.3,1.3,1.3,3.5,3.5,3.5,3.5,3.5,3.5,1.1,1.1,1.1,1.1,1.1,1.1,0.4,0.4,0.4,0.4,0.4,0.4,0.7,0.7,0.7,0.7,0.7,0.7,1.1,1.1,1.1,1.1,1.1,1.1,0.2,0.2,0.2,0.2,0.2,0.2,0.4,0.4,0.4,0.4,0.4,0.4,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0,0,0,0,0,0,0.4,0.4,0.4,0.4]}},
+  waterAt:'27 ก.ย. 2569 11:30 น.',
   stations:[
-    {n:'ร.ร.บ้านสามพราน',a:'สามพราน นครปฐม',r:'แม่น้ำท่าจีน',wl:1.60,prev:1.68,bank:1.5,pct:100.97,dt:'2026-09-27 10:00',lat:13.72411,lon:100.215683},
-    {n:'เมืองสมุทรสาคร',a:'เมืองสมุทรสาคร',r:'แม่น้ำท่าจีน',wl:0.03,prev:0.07,bank:1.93,pct:78.62,dt:'2026-09-27 10:50',lat:13.58598,lon:100.23048},
-    {n:'คลองภาษีเจริญ เพชรเกษม69',a:'บางแค กทม.',r:'คลองภาษีเจริญ',wl:-2.01,prev:-2.02,bank:1.42,pct:57.29,dt:'2026-09-27 10:50',lat:13.69158,lon:100.38127},
-    {n:'คลองมหาชัย วัดพันท้ายนรสิงห์',a:'เมืองสมุทรสาคร',r:'คลองสนามชัย',wl:0.41,prev:0.43,bank:1.3,pct:77.48,dt:'2026-09-27 10:50',lat:13.58184,lon:100.36587},
-    {n:'ศาลาดิน',a:'พุทธมณฑล นครปฐม',r:'คลองหม่อมเจ้าเฉลิมศรี',wl:1.07,prev:1.06,bank:2.31,pct:71.30,dt:'2026-09-27 10:50',lat:13.80777,lon:100.27417},
-    {n:'สะพานนครชัยศรี',a:'นครชัยศรี นครปฐม',r:'แม่น้ำท่าจีน',wl:1.98,prev:1.99,bank:1.95,pct:100.35,dt:'2026-09-27 10:50',lat:13.79217,lon:100.19817},
+    {n:'คลองภาษีเจริญ เพชรเกษม69',a:'บางแค กรุงเทพมหานคร',r:'คลองภาษีเจริญ',wl:-2.02,prev:-2.02,bank:1.42,pct:57.23,dt:'2026-09-27 11:30',lat:13.69158,lon:100.38127},
+    {n:'คลองมหาชัย วัดพันท้ายนรสิงห์',a:'เมืองสมุทรสาคร สมุทรสาคร',r:'คลองสนามชัย',wl:0.32,prev:0.34,bank:1.3,pct:75.37,dt:'2026-09-27 11:30',lat:13.58184,lon:100.36587},
+    {n:'เมืองสมุทรสาคร',a:'เมืองสมุทรสาคร สมุทรสาคร',r:'แม่น้ำท่าจีน',wl:-0.12,prev:-0.09,bank:1.93,pct:76.94,dt:'2026-09-27 11:30',lat:13.58598,lon:100.23048},
+    {n:'ร.ร.บ้านสามพราน',a:'สามพราน นครปฐม',r:'แม่น้ำท่าจีน',wl:1.6,prev:1.68,bank:1.5,pct:100.97,dt:'2026-09-27 10:00',lat:13.72411,lon:100.215683},
+    {n:'ศาลาดิน',a:'พุทธมณฑล นครปฐม',r:'คลองหม่อมเจ้าเฉลิมศรี',wl:1.07,prev:1.07,bank:2.31,pct:71.37,dt:'2026-09-27 11:30',lat:13.80777,lon:100.27417},
+    {n:'สะพานกรุงเทพ',a:'ธนบุรี กรุงเทพมหานคร',r:'แม่น้ำเจ้าพระยา',wl:0.68,prev:0.71,bank:2.16,pct:91.71,dt:'2026-09-27 11:30',lat:13.700301,lon:100.49277},
+    {n:'คลองมหาสวัสดิ บางกรวย-สวนผัก',a:'ตลิ่งชัน กรุงเทพมหานคร',r:'คลองมหาสวัสดิ์',wl:2.15,prev:2.15,bank:2.07,pct:101.47,dt:'2026-09-27 09:00',lat:13.79965,lon:100.43863},
+    {n:'สะพานนครชัยศรี',a:'นครชัยศรี นครปฐม',r:'แม่น้ำท่าจีน',wl:1.98,prev:1.97,bank:1.95,pct:100.36,dt:'2026-09-27 11:30',lat:13.79217,lon:100.19817},
     {n:'ที่ว่าการอ.นครชัยศรี',a:'นครชัยศรี นครปฐม',r:'แม่น้ำท่าจีน',wl:2.18,prev:2.16,bank:1.5,pct:106.42,dt:'2026-09-27 10:00',lat:13.80096,lon:100.188026},
-    {n:'คลองมหาสวัสดิ บางกรวย-สวนผัก',a:'ตลิ่งชัน กทม.',r:'คลองมหาสวัสดิ์',wl:2.15,prev:2.15,bank:2.07,pct:101.47,dt:'2026-09-27 09:00',lat:13.79965,lon:100.43863},
-    {n:'สะพานกรุงเทพ',a:'ธนบุรี กทม.',r:'แม่น้ำเจ้าพระยา',wl:1.13,prev:1.26,bank:2.16,pct:94.23,dt:'2026-09-27 09:10',lat:13.700301,lon:100.49277},
     {n:'บ้านแพ้ว',a:'บ้านแพ้ว สมุทรสาคร',r:'คลองดำเนินสะดวก',wl:0.68,prev:0.68,bank:0.96,pct:91.52,dt:'2026-09-27 10:50',lat:13.57563,lon:100.07884},
-    {n:'ปตร. คลองลัดบางยอ 2',a:'พระประแดง สมุทรปราการ',r:'แม่น้ำเจ้าพระยา',wl:1.50,prev:1.35,bank:0.91,pct:123.47,dt:'2026-09-24 17:40',lat:13.661021,lon:100.56727},
-    {n:'ปตร. คลองลัดบางยอ 1',a:'พระประแดง สมุทรปราการ',r:'แม่น้ำเจ้าพระยา',wl:0.87,prev:0.88,bank:1.51,pct:73.43,dt:'2026-09-27 10:50',lat:13.676162,lon:100.553085},
-    {n:'ปตร.วัดบางกระเจ้านอก',a:'พระประแดง สมุทรปราการ',r:'คลองบางกะเจ้า',wl:0.89,prev:0.91,bank:1.26,pct:86.14,dt:'2026-09-27 10:50',lat:13.689612,lon:100.554886},
-    {n:'อโศก',a:'วัฒนา กทม.',r:'คลองแสนแสบ',wl:1.47,prev:1.48,bank:2.39,pct:51.32,dt:'2026-09-27 10:50',lat:13.74325,lon:100.562164},
-    {n:'กรมชลประทานสามเสน',a:'ดุสิต กทม.',r:'แม่น้ำเจ้าพระยา',wl:1.66,prev:1.79,bank:2.26,pct:96.42,dt:'2026-09-27 10:00',lat:13.78815,lon:100.509148},
-    {n:'คลองจระเข้ใหญ่ บางเสาธง',a:'บางเสาธง สมุทรปราการ',r:'คลองหัวตะเข้',wl:0.60,prev:0.59,bank:0.43,pct:106.31,dt:'2026-09-26 02:20',lat:13.66949,lon:100.80058},
-    {n:'คลองลาดพร้าว วัดบางบัว',a:'บางเขน กทม.',r:'คลองบางบัว',wl:2.76,prev:2.76,bank:2.2,pct:122.06,dt:'2026-09-27 10:50',lat:13.85402,lon:100.58746},
-    {n:'คลองลำปลาทิว ลาดกระบัง',a:'ลาดกระบัง กทม.',r:'คลองลำปลาทิว',wl:0.65,prev:0.64,bank:0.62,pct:100.61,dt:'2026-09-27 10:50',lat:13.7407,lon:100.79468}
+    {n:'ปตร. คลองลัดบางยอ 2',a:'พระประแดง สมุทรปราการ',r:'แม่น้ำเจ้าพระยา',wl:1.5,prev:1.35,bank:0.91,pct:123.47,dt:'2026-09-24 17:40',lat:13.661021,lon:100.56727},
+    {n:'ปตร. คลองลัดบางยอ 1',a:'พระประแดง สมุทรปราการ',r:'แม่น้ำเจ้าพระยา',wl:0.77,prev:0.8,bank:1.51,pct:69.3,dt:'2026-09-27 11:20',lat:13.676162,lon:100.553085},
+    {n:'ปตร.วัดบางกระเจ้านอก',a:'พระประแดง สมุทรปราการ',r:'คลองบางกะเจ้า',wl:0.74,prev:0.78,bank:1.26,pct:80.52,dt:'2026-09-27 11:30',lat:13.689612,lon:100.554886},
+    {n:'อโศก',a:'วัฒนา กรุงเทพมหานคร',r:'คลองแสนแสบ',wl:1.37,prev:1.29,bank:2.39,pct:46.03,dt:'2026-09-27 11:30',lat:13.74325,lon:100.562164},
+    {n:'กรมชลประทานสามเสน',a:'ดุสิต กรุงเทพมหานคร',r:'แม่น้ำเจ้าพระยา',wl:1.66,prev:1.79,bank:2.26,pct:96.42,dt:'2026-09-27 10:00',lat:13.78815,lon:100.509148},
+    {n:'คลองจระเข้ใหญ่ บางเสาธง',a:'บางเสาธง สมุทรปราการ',r:'คลองหัวตะเข้',wl:0.6,prev:0.59,bank:0.43,pct:106.31,dt:'2026-09-26 02:20',lat:13.66949,lon:100.80058},
+    {n:'คลองลาดพร้าว วัดบางบัว',a:'บางเขน กรุงเทพมหานคร',r:'คลองบางบัว',wl:2.75,prev:2.75,bank:2.2,pct:121.9,dt:'2026-09-27 11:30',lat:13.85402,lon:100.58746},
+    {n:'คลองลำปลาทิว ลาดกระบัง',a:'ลาดกระบัง กรุงเทพมหานคร',r:'คลองลำปลาทิว',wl:0.64,prev:0.65,bank:0.62,pct:100.51,dt:'2026-09-27 11:30',lat:13.7407,lon:100.79468}
   ]
 };
 const MODELS=[
@@ -408,10 +449,24 @@ const MODELS=[
   {k:'icon',api:'icon_seamless',nm:'ICON',by:'กรมอุตุฯ เยอรมนี (DWD)',c:'var(--m-icon)'},
   {k:'jma',api:'jma_seamless',nm:'JMA',by:'กรมอุตุฯ ญี่ปุ่น',c:'var(--m-jma)'}
 ];
-const WORK={lat:13.6693,lon:100.6106,name:'ไบเทค บางนา'};
-const DEF_HOME={lat:13.660,lon:100.285};
+const PRESETS={
+ home:[
+  {id:'khaerai-school',name:'ใกล้ รร.บ้านแคราย',area:'ต.แคราย อ.กระทุ่มแบน จ.สมุทรสาคร',amp:'กระทุ่มแบน',lat:13.64666,lon:100.32451},
+  {id:'khaerai-muni',name:'เทศบาลตำบลแคราย',area:'อ.กระทุ่มแบน จ.สมุทรสาคร',amp:'กระทุ่มแบน',lat:13.64782,lon:100.31685},
+  {id:'omnoi',name:'อ้อมน้อย',area:'อ.กระทุ่มแบน จ.สมุทรสาคร',amp:'กระทุ่มแบน',lat:13.70647,lon:100.29901},
+  {id:'ktb-town',name:'ตลาดกระทุ่มแบน',area:'อ.กระทุ่มแบน จ.สมุทรสาคร',amp:'กระทุ่มแบน',lat:13.65522,lon:100.26456},
+  {id:'mahachai',name:'มหาชัย',area:'อ.เมืองสมุทรสาคร จ.สมุทรสาคร',amp:'เมืองสมุทรสาคร',lat:13.5475,lon:100.2744},
+  {id:'bangkhae',name:'บางแค',area:'เขตบางแค กรุงเทพฯ',amp:'บางแค',lat:13.7136,lon:100.4066}],
+ work:[
+  {id:'bitec',name:'ไบเทค บางนา',area:'เขตบางนา กรุงเทพฯ',amp:'บางนา',lat:13.6693,lon:100.6106},
+  {id:'mega',name:'เมกาบางนา',area:'อ.บางพลี จ.สมุทรปราการ',amp:'บางพลี',lat:13.6468,lon:100.6802},
+  {id:'silom',name:'สีลม',area:'เขตบางรัก กรุงเทพฯ',amp:'บางรัก',lat:13.7290,lon:100.5340},
+  {id:'siam',name:'สยาม',area:'เขตปทุมวัน กรุงเทพฯ',amp:'ปทุมวัน',lat:13.7456,lon:100.5347},
+  {id:'bkk-airport',name:'สนามบินสุวรรณภูมิ',area:'อ.บางพลี จ.สมุทรปราการ',amp:'บางพลี',lat:13.6900,lon:100.7501}]
+};
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-let HOME=store.get('tko_home',DEF_HOME);
+let HOME=store.get('tko_home2',PRESETS.home[0]);
+let WORK=store.get('tko_work2',PRESETS.work[0]);
 
 const ROUTES=[
   {id:'r1',nm:'ทางด่วนเฉลิมมหานคร',via:'พระราม 2 → ดาวคะนอง → ทางด่วนขั้นที่ 1 → ด่านบางนา',km:'~42 กม.',color:'#3FC1E0',
@@ -519,32 +574,33 @@ async function loadWater(){
     S.waterLive=true;S.waterAt=new Date();setSrc('s-water','live','ระดับน้ำ · สด');
   }catch(e){
     if(!S.stations){S.stations=SNAP.stations;S.waterLive=false}
-    setSrc('s-water','snap','ระดับน้ำ · '+SNAP.at);
+    setSrc('s-water','snap','ระดับน้ำ · '+SNAP.waterAt);
   }
   renderWater();analyze();
 }
-function near(p,maxKm,n){return S.stations.map(s=>Object.assign({},s,{km:km(p.lat,p.lon,s.lat,s.lon)})).filter(s=>s.km<=maxKm).sort((a,b)=>a.km-b.km).slice(0,n)}
+function near(p,maxKm,n){return S.stations.map(s=>{const d=km(p.lat,p.lon,s.lat,s.lon);const same=!!p.amp&&String(s.a).indexOf(p.amp)===0;return Object.assign({},s,{km:d,zone:d<=5?'local':same?'same':'other'})}).filter(s=>s.km<=maxKm).sort((a,b)=>a.km-b.km).slice(0,n)}
+const ZONE_TX={local:'ในพื้นที่',same:'อำเภอเดียวกัน',other:'พื้นที่อื่น'};
 function lvlOf(p){return p>=100?5:p>=70?4:p>=30?3:2}
 const LVL_TX={5:'ล้นตลิ่ง',4:'น้ำมาก',3:'ปกติ',2:'น้อย'};
-function isStale(dt){const t=new Date(String(dt).replace(' ','T')+':00+07:00');const ref=S.waterLive?Date.now():new Date('2026-09-27T11:05:00+07:00').getTime();return (ref-t.getTime())>6*3600000}
+function isStale(dt){const t=new Date(String(dt).replace(' ','T')+':00+07:00');const ref=S.waterLive?Date.now():new Date('2026-09-27T11:30:00+07:00').getTime();return (ref-t.getTime())>6*3600000}
 function stRows(list){
   if(!list.length)return '<tr><td>ไม่พบสถานีในรัศมี</td></tr>';
   return `<thead><tr><th>สถานี</th><th>% ตลิ่ง</th><th class="r">แนวโน้ม</th><th class="r">ห่าง</th></tr></thead><tbody>`+list.map(s=>{
     const L=lvlOf(s.pct);const col=L===5?'var(--crit)':L===4?'var(--hi)':L===3?'var(--ok)':'var(--acc)';
     const w=Math.min(100,s.pct/1.3);const df=s.prev==null||isNaN(s.prev)?null:+(s.wl-s.prev).toFixed(2);
     const tr=df==null?'<span class="flat">—</span>':df>0.005?`<span class="up">▲ ${Math.round(df*100)} ซม.</span>`:df<-0.005?`<span class="down">▼ ${Math.round(-df*100)} ซม.</span>`:'<span class="flat">ทรงตัว</span>';
-    return `<tr><td><div class="stn">${esc(s.n)}<small>${esc(s.r)} · ${esc(s.a)}</small></div>${isStale(s.dt)?`<div class="stale">ข้อมูลเก่า ${esc(s.dt)}</div>`:''}</td>
+    return `<tr><td><div class="stn">${esc(s.n)}<span class="tag ${s.zone}">${ZONE_TX[s.zone]}</span><small>${esc(s.r)} · อ.${esc(s.a)}</small></div>${isStale(s.dt)?`<div class="stale">ข้อมูลเก่า ${esc(s.dt)}</div>`:''}</td>
       <td><span class="chip c${L}">${s.pct.toFixed(0)}% ${LVL_TX[L]}</span><div class="bar"><i style="width:${w}%;background:${col}"></i><b></b></div></td>
       <td class="r num">${tr}</td><td class="r num">${s.km.toFixed(1)} กม.</td></tr>`}).join('')+'</tbody>';
 }
 function renderWater(){
-  $('st-home').innerHTML=stRows(near(HOME,25,8));
-  $('st-work').innerHTML=stRows(near(WORK,25,8));
-  $('wl-time').textContent=S.waterLive?('ดึงล่าสุด '+hhmm(S.waterAt)+' น. · สสน. / กรมชลประทาน'):('ข้อมูลบันทึก '+SNAP.at+' · สสน. / กรมชลประทาน');
+  [['home',HOME],['work',WORK]].forEach(([k,P])=>{const l=near(P,25,8);$('st-'+k).innerHTML=stRows(l);
+    const loc=l.filter(s=>s.km<=5).length;$('st-'+k+'-n').textContent=loc?`มีสถานีวัดในรัศมี 5 กม. ${loc} แห่ง`:`ไม่มีสถานีวัดระดับน้ำในรัศมี 5 กม. ของ${P.name} ใกล้สุดอยู่ห่าง ${l[0]?l[0].km.toFixed(1):'>25'} กม. ใช้ดูแนวโน้มของลำน้ำรอบๆ เท่านั้น`});
+  $('wl-time').textContent=S.waterLive?('ดึงล่าสุด '+hhmm(S.waterAt)+' น. · สสน. / กรมชลประทาน'):('ข้อมูลบันทึก '+SNAP.waterAt+' · สสน. / กรมชลประทาน');
 }
 
 /* ---------------- radar ---------------- */
-let map=null,frames=[],layers=[],cur=0,timer=null,routeLayers=[],homeMk=null,setMode=false;
+let map=null,frames=[],layers=[],cur=0,timer=null,routeLayers=[],homeMk=null,workMk=null,setMode=null;
 const CLS_TX=['ไม่มีฝน','ฝนเบา','ฝนปานกลาง','ฝนหนัก','ฝนหนักมาก'];
 function initMap(){
   if(!window.L){$('mapfb').hidden=false;setSrc('s-radar','err','เรดาร์ · เปิดไม่ได้');return false}
@@ -553,21 +609,27 @@ function initMap(){
   let ok=0,bad=0;base.on('tileload',()=>ok++);base.on('tileerror',()=>bad++);
   setTimeout(()=>{if(ok===0){$('mapfb').hidden=false;$('player').hidden=true;$('legend').hidden=true;setSrc('s-radar','err','เรดาร์ · เปิดในไฟล์ที่ดาวน์โหลด')}},7000);
   const icon=c=>L.divIcon({className:'',html:`<div class="pin ${c}"></div>`,iconSize:[16,16],iconAnchor:[8,8]});
-  homeMk=L.marker([HOME.lat,HOME.lon],{icon:icon('home')}).addTo(map).bindTooltip('บ้าน · หมู่บ้านวิเศษสิริ',{direction:'top'});
-  L.marker([WORK.lat,WORK.lon],{icon:icon('work')}).addTo(map).bindTooltip('ที่ทำงาน · ไบเทค บางนา',{direction:'top'});
-  map.on('click',e=>{if(!setMode)return;HOME={lat:+e.latlng.lat.toFixed(5),lon:+e.latlng.lng.toFixed(5)};store.set('tko_home',HOME);homeMk.setLatLng(e.latlng);setMode=false;$('sethome').classList.remove('on');$('sethome').textContent='ตั้งตำแหน่งบ้าน';drawRoutes();refreshAll()});
+  homeMk=L.marker([HOME.lat,HOME.lon],{icon:icon('home')}).addTo(map).bindTooltip('',{direction:'top'});
+  workMk=L.marker([WORK.lat,WORK.lon],{icon:icon('work')}).addTo(map).bindTooltip('',{direction:'top'});
+  updateMarkers();
+  map.on('click',e=>{if(!setMode)return;const kind=setMode;endMapMode();pickFromMap(kind,e.latlng.lat,e.latlng.lng)});
   drawRoutes();
   return true;
 }
-function routePts(r){return r.pts.map((p,i)=>i===0?[HOME.lat,HOME.lon]:p)}
+function routePts(r){return r.pts.map((p,i)=>i===0?[HOME.lat,HOME.lon]:i===r.pts.length-1?[WORK.lat,WORK.lon]:p)}
+function activeRoutes(){
+  if(WORK.id==='bitec')return ROUTES;
+  return [{id:'rx',nm:'แนวตรง บ้าน → ที่ทำงาน',via:'ตรวจฝนตามแนวเส้นตรง ไม่ใช่เส้นทางขับรถ',km:`~${km(HOME.lat,HOME.lon,WORK.lat,WORK.lon).toFixed(0)} กม. (เส้นตรง)`,color:'#3FC1E0',base:1,steps:['รายละเอียดเส้นทางมีเฉพาะปลายทางไบเทค บางนา','ใช้ Google Maps หรือ Longdo Traffic วางแผนเส้นทางจริง'],risk:'ดูฝนตามแนวทางคร่าวๆ จากเรดาร์',pts:[[0,0],[0,0]]}];
+}
 function drawRoutes(){
   if(!map)return;routeLayers.forEach(l=>map.removeLayer(l));routeLayers=[];
   if(!$('showroutes').classList.contains('on'))return;
-  ROUTES.forEach(r=>routeLayers.push(L.polyline(routePts(r),{color:r.color,weight:4,opacity:.85,dashArray:r.id==='r1'?null:'6 6'}).addTo(map).bindTooltip(r.nm)));
+  activeRoutes().forEach(r=>routeLayers.push(L.polyline(routePts(r),{color:r.color,weight:4,opacity:.85,dashArray:r.id==='r1'?null:'6 6'}).addTo(map).bindTooltip(r.nm)));
 }
 $('showroutes').classList.add('on');$('showroutes').textContent='ซ่อนเส้นทาง';
 $('showroutes').addEventListener('click',()=>{const b=$('showroutes');b.classList.toggle('on');b.textContent=b.classList.contains('on')?'ซ่อนเส้นทาง':'แสดงเส้นทาง';drawRoutes()});
-$('sethome').addEventListener('click',()=>{setMode=!setMode;$('sethome').classList.toggle('on',setMode);$('sethome').textContent=setMode?'แตะบนแผนที่…':'ตั้งตำแหน่งบ้าน';if(setMode)showTab('rv')});
+function updateMarkers(){if(!homeMk)return;homeMk.setLatLng([HOME.lat,HOME.lon]).setTooltipContent('บ้าน · '+HOME.name);workMk.setLatLng([WORK.lat,WORK.lon]).setTooltipContent('ที่ทำงาน · '+WORK.name)}
+function endMapMode(){setMode=null;['home','work'].forEach(k=>{const b=$(k+'-map');b.classList.remove('on');b.textContent='แตะบนแผนที่'});$('mapmode').textContent='จุดเขียว = บ้าน · จุดส้ม = ที่ทำงาน · เปลี่ยนพื้นที่ได้ที่ “พื้นที่ที่ติดตาม” ด้านบน'}
 
 async function loadRadar(){
   if(!map)return;
@@ -635,7 +697,7 @@ async function analyzeRadar(host,past){
   if(c1&&c0){const vx=(c1.lon-c0.lon)*111.32*Math.cos(c1.lat*Math.PI/180)/dtH,vy=(c1.lat-c0.lat)*110.57/dtH;R.v={vx,vy,spd:Math.hypot(vx,vy)};const ang=(Math.atan2(vx,vy)*180/Math.PI+360)%360;R.v.dir=DIRS[Math.round(ang/45)%8]}
   const eta=(p)=>{const nh=nearestHeavy(G1,p,2,80);if(!nh)return null;const o={d:nh.d};if(R.v&&nh.d>2){const ux=(p.lon-nh.lon)*111.32*Math.cos(p.lat*Math.PI/180)/nh.d,uy=(p.lat-nh.lat)*110.57/nh.d;const close=R.v.vx*ux+R.v.vy*uy;if(close>3)o.eta=nh.d/close*60}return o};
   R.nh=eta(HOME);R.nw=eta(WORK);
-  R.routes=ROUTES.map(r=>{const pts=routePts(r);const samp=[];for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1];const n=Math.max(1,Math.round(km(a[0],a[1],b[0],b[1])/2));for(let k=0;k<n;k++){const t=k/n;samp.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}}samp.push(pts[pts.length-1]);const cs=samp.map(p=>at(G1,p[0],p[1],1));return {max:Math.max(...cs),wet:cs.filter(c=>c>=1).length/cs.length,heavy:cs.filter(c=>c>=3).length/cs.length}});
+  R.routes=activeRoutes().map(r=>{const pts=routePts(r);const samp=[];for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1];const n=Math.max(1,Math.round(km(a[0],a[1],b[0],b[1])/2));for(let k=0;k<n;k++){const t=k/n;samp.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}}samp.push(pts[pts.length-1]);const cs=samp.map(p=>at(G1,p[0],p[1],1));return {max:Math.max(...cs),wet:cs.filter(c=>c>=1).length/cs.length,heavy:cs.filter(c=>c>=3).length/cs.length}});
   S.radar=R;renderRadarSide();renderRoutes();analyze();
 }
 function intens(c){return `<span class="i${c}">${CLS_TX[c]}</span>`}
@@ -661,8 +723,10 @@ $('tab-rv').addEventListener('click',()=>showTab('rv'));$('tab-windy').addEventL
 /* ---------------- routes ---------------- */
 function renderRoutes(){
   const R=S.radar;
-  $('rts').innerHTML=ROUTES.map((r,i)=>{
-    const rr=R&&R.routes?R.routes[i]:null;
+  $('rt-h').textContent=`เส้นทางไปทำงาน ${HOME.name} → ${WORK.name}`;
+  const RT=activeRoutes();
+  $('rts').innerHTML=RT.map((r,i)=>{
+    const rr=R&&R.routes&&R.routes.length===RT.length?R.routes[i]:null;
     let score=r.base+(rr?(rr.max>=3?2:rr.max>=2?1:0):0);
     const L=Math.min(3,Math.max(0,score-1));const LT=['ผ่านได้','ระวัง','เสี่ยงสูง','เลี่ยง'][L];
     const rain=rr?`ฝนตามแนวเส้นทางตอนนี้: <b>${CLS_TX[rr.max]}</b> · มีฝน ${(rr.wet*100).toFixed(0)}% ของระยะทาง`:'ฝนตามเส้นทาง: รอข้อมูลเรดาร์ (ใช้ได้ในไฟล์ที่ดาวน์โหลด)';
@@ -679,37 +743,39 @@ function analyze(){
     let sc=0;const why=[];
     const st=modelStats(p===HOME?'home':'work',24);const s6=modelStats(p===HOME?'home':'work',6);
     if(st.avail<6)why.push('ข้อมูลพยากรณ์ชุดนี้เก่า กดอัปเดตเพื่อดึงใหม่');
-    if(st.mean>=50){sc+=3}else if(st.mean>=20){sc+=2}else if(st.mean>=8){sc+=1}
+    if(st.mean>=40){sc+=3}else if(st.mean>=15){sc+=2}else if(st.mean>=5){sc+=1}
     why.push(`ฝน 24 ชม. ข้างหน้า เฉลี่ย 4 แบบจำลอง ${st.mean.toFixed(1)} มม. (${st.min.toFixed(0)}–${st.max.toFixed(0)} มม.)${st.max-st.min>st.mean&&st.mean>3?' แบบจำลองยังเห็นต่างกันมาก':''}`);
-    if(R){const c=p===HOME?R.home:R.work;sc+=c>=3?2:c>=1?1:0;why.push(`เรดาร์ ${hhmm(R.time)} น.: ${CLS_TX[c]}ที่${p===HOME?'บ้าน':'ไบเทค'}`);const o=p===HOME?R.nh:R.nw;if(o&&o.eta!=null&&o.eta<90){sc+=1;why.push(`กลุ่มฝนหนักห่าง ${o.d.toFixed(0)} กม. กำลังเคลื่อนเข้ามา อาจถึงใน ~${Math.round(o.eta)} นาที`)}}
+    if(R){const c=p===HOME?R.home:R.work;sc+=c>=3?2:c>=1?1:0;why.push(`เรดาร์ ${hhmm(R.time)} น.: ${CLS_TX[c]}ที่${p.name}`);const o=p===HOME?R.nh:R.nw;if(o&&o.eta!=null&&o.eta<90){sc+=1;why.push(`กลุ่มฝนหนักห่าง ${o.d.toFixed(0)} กม. กำลังเคลื่อนเข้ามา อาจถึงใน ~${Math.round(o.eta)} นาที`)}}
     const ns=near(p,rad,20).filter(s=>!isStale(s.dt));
+    const lab=s=>`${s.n} (อ.${s.a.split(' ')[0]} ${s.km.toFixed(0)} กม.) ${s.pct.toFixed(0)}%`;
     const over=ns.filter(s=>s.pct>=100),high=ns.filter(s=>s.pct>=90&&s.pct<100),rising=ns.filter(s=>s.prev!=null&&s.wl-s.prev>0.02);
-    if(over.length){sc+=2;why.push(`ลำน้ำล้นตลิ่ง ${over.length} สถานีในรัศมี ${rad} กม.: ${over.slice(0,3).map(s=>`${s.n} ${s.pct.toFixed(0)}%`).join(', ')}`)}
-    else if(high.length){sc+=1;why.push(`ลำน้ำใกล้เต็มตลิ่ง: ${high.slice(0,2).map(s=>`${s.n} ${s.pct.toFixed(0)}%`).join(', ')}`)}
-    else if(ns.length){why.push(`ลำน้ำใกล้เคียงยังรับน้ำได้ สูงสุด ${Math.max(...ns.map(s=>s.pct)).toFixed(0)}%`)}
+    if(!ns.length)why.push(`ไม่มีสถานีวัดระดับน้ำในรัศมี ${rad} กม. ของ${p.name}`);
+    else if(over.length){sc+=2;why.push(`ลำน้ำล้นตลิ่งในรัศมี ${rad} กม.: ${over.slice(0,3).map(lab).join(', ')}`)}
+    else if(high.length){sc+=1;why.push(`ลำน้ำใกล้เต็มตลิ่ง: ${high.slice(0,2).map(lab).join(', ')}`)}
+    else why.push(`ลำน้ำในรัศมี ${rad} กม. ยังรับน้ำได้: ${ns.slice(0,2).map(lab).join(', ')}`);
     if(rising.length){sc+=1;why.push(`น้ำกำลังขึ้นที่ ${rising.slice(0,2).map(s=>s.n).join(', ')}`)}
     if(extra)extra(why,a=>sc+=a);
     const l=sc>=6?3:sc>=4?2:sc>=2?1:0;
     const kv=[[st.mean.toFixed(0),'มม./24 ชม.'],[s6.mean.toFixed(1),'มม./6 ชม.'],[ns.length?Math.max(...ns.map(s=>s.pct)).toFixed(0)+'%':'—','ลำน้ำสูงสุด']];
     out.push({title,where,l,why,kv});
   };
-  mk('บ้าน','หมู่บ้านวิเศษสิริ ต.แคราย',HOME,20,(why,add)=>{
-    const up=S.stations.filter(s=>/ท่าจีน/.test(s.r)&&/สามพราน|นครชัยศรี/.test(s.a+s.n)&&s.pct>=100&&!isStale(s.dt));
-    if(up.length){add(1);why.push(`แม่น้ำท่าจีนต้นน้ำ (สามพราน–นครชัยศรี) ล้นตลิ่ง ${up.length} สถานี มวลน้ำจะไหลลงผ่านกระทุ่มแบนไปออกทะเลที่มหาชัย เฝ้าระวังช่วงน้ำทะเลหนุน`)}
+  mk('บ้าน',`${HOME.name} · ${HOME.area}`,HOME,10,(why,add)=>{
+    const ctx=near(HOME,25,30).filter(s=>s.km>10&&s.pct>=100&&!isStale(s.dt));
+    if(ctx.length)why.push(`ข้อมูลประกอบ (ไม่นับในระดับความเสี่ยง): พื้นที่อื่นห่างออกไปมีลำน้ำล้นตลิ่ง ${ctx.slice(0,2).map(s=>`${s.n} อ.${s.a.split(' ')[0]} ${s.km.toFixed(0)} กม.`).join(', ')}`);
   });
-  mk('ที่ทำงาน','ไบเทค บางนา และโดยรอบ',WORK,15,(why,add)=>{
-    if(SNAP_AGE()<36){add(1);why.push('รายงานเช้า 27 ก.ย.: บางนา-ตราด แยกบางนาขาออก น้ำขัง 15–20 ซม. และสุขุมวิท 101/1')}
+  mk('ที่ทำงาน',`${WORK.name} · ${WORK.area}`,WORK,10,(why,add)=>{
+    if(WORK.id==='bitec'&&SNAP_AGE()<36){add(1);why.push('รายงานเช้า 27 ก.ย.: บางนา-ตราด แยกบางนาขาออก น้ำขัง 15–20 ซม. และสุขุมวิท 101/1')}
   });
   // route
   {
-    let best=null;const rs=R&&R.routes?R.routes:null;
-    const scored=ROUTES.map((r,i)=>({r,sc:r.base+(rs?(rs[i].max>=3?2:rs[i].max>=2?1:0):0)})).sort((a,b)=>a.sc-b.sc);best=scored[0];
+    let best=null;const rs=R&&R.routes&&R.routes.length===activeRoutes().length?R.routes:null;
+    const RTS=activeRoutes();const scored=RTS.map((r,i)=>({r,sc:r.base+(rs?(rs[i].max>=3?2:rs[i].max>=2?1:0):0)})).sort((a,b)=>a.sc-b.sc);best=scored[0];
     const worst=Math.max(...scored.map(s=>s.sc));const l=Math.min(3,Math.max(0,best.sc));
-    const why=[`เส้นทางแนะนำ: <b>${best.r.nm}</b> (${best.r.via})`,'ทางยกระดับเลี่ยงน้ำขังบนถนนราบได้ดีที่สุด'];
-    if(rs){const i=ROUTES.indexOf(best.r);why.push(`ตอนนี้ฝนตามแนวเส้นทาง: ${CLS_TX[rs[i].max]}`)}else why.push('ฝนตามเส้นทาง: ต้องใช้เรดาร์สดในไฟล์ที่ดาวน์โหลด');
-    why.push('ช่วงสุดท้ายทุกเส้นทางต้องผ่านแยกบางนาที่มีน้ำขัง เลี่ยงรถเก๋งเตี้ยถ้าน้ำเกิน 20 ซม.');
+    const why=[`${WORK.id==='bitec'?'เส้นทางแนะนำ':'ตรวจฝนตาม'}: <b>${best.r.nm}</b> (${best.r.via})`];if(WORK.id==='bitec')why.push('ทางยกระดับเลี่ยงน้ำขังบนถนนราบได้ดีที่สุด');
+    if(rs){const i=RTS.indexOf(best.r);why.push(`ตอนนี้ฝนตามแนวเส้นทาง: ${CLS_TX[rs[i].max]}`)}else why.push('ฝนตามเส้นทาง: ต้องใช้เรดาร์สดในไฟล์ที่ดาวน์โหลด');
+    if(WORK.id==='bitec')why.push('ช่วงสุดท้ายทุกเส้นทางต้องผ่านแยกบางนาที่มีน้ำขัง เลี่ยงรถเก๋งเตี้ยถ้าน้ำเกิน 20 ซม.');
     const now=bkkNow();if(now.getDate()===27&&now.getMonth()===8)why.push('ทางพิเศษยังฟรีถึงเที่ยงคืนวันนี้');
-    out.push({title:'เส้นทางไปทำงาน',where:'แคราย → ไบเทค',l,why,kv:[[scored.length,'เส้นทางที่ประเมิน'],[best.r.km.replace('~',''),'ระยะทาง'],[worst>=3?'มี':'ไม่มี','เส้นทางควรเลี่ยง']]});
+    out.push({title:'เส้นทางไปทำงาน',where:`${HOME.name} → ${WORK.name}`,l,why,kv:[[scored.length,'เส้นทางที่ประเมิน'],[best.r.km.replace('~',''),'ระยะทาง'],[worst>=3?'มี':'ไม่มี','เส้นทางควรเลี่ยง']]});
   }
   $('ana').innerHTML=out.map(o=>`<div class="rc" data-l="${o.l}"><div class="where">${o.where}</div><h3>${o.title}</h3><span class="lvl" data-l="${o.l}">● ${lvlName(o.l)}</span>
     <div class="kv">${o.kv.map(([b,s])=>`<div><b>${b}</b><span>${s}</span></div>`).join('')}</div><ul>${o.why.map(w=>`<li>${w}</li>`).join('')}</ul></div>`).join('');
@@ -719,6 +785,40 @@ function analyze(){
   if(!S.modelLive&&!S.waterLive){md.hidden=false;md.innerHTML=`<b>กำลังแสดงข้อมูลที่บันทึกไว้ ${SNAP.at}</b> · หน้านี้ดึงข้อมูลสดไม่ได้ เปิดไฟล์ TKO-Survivor-Flood-2026.html ใน Chrome เพื่อดูเรดาร์เคลื่อนไหวและข้อมูลสดทุก 10 นาที`}else md.hidden=true;
 }
 function SNAP_AGE(){return (Date.now()-new Date('2026-09-27T11:05:00+07:00').getTime())/3600000}
+
+/* ---------------- places ---------------- */
+function renderPlaces(){
+  ['home','work'].forEach(k=>{const P=k==='home'?HOME:WORK;$(k+'-name').textContent=P.name;$(k+'-area').textContent=P.area||`${P.lat.toFixed(4)}, ${P.lon.toFixed(4)}`;
+    const sel=$(k+'-sel');sel.innerHTML=PRESETS[k].map(x=>`<option value="${x.id}">${esc(x.name)} · ${esc(x.area)}</option>`).join('')+(PRESETS[k].some(x=>x.id===P.id)?'':`<option value="__cur">${esc(P.name)} (ที่เลือกเอง)</option>`);sel.value=PRESETS[k].some(x=>x.id===P.id)?P.id:'__cur'});
+  $('brand-sub').textContent=`บ้าน: ${HOME.name} · ที่ทำงาน: ${WORK.name}`;
+  $('rl-home').textContent='บ้าน · '+HOME.name;$('rl-work').textContent='ที่ทำงาน · '+WORK.name;
+  $('st-home-h').textContent='รอบบ้าน · '+HOME.name;$('st-work-h').textContent='รอบที่ทำงาน · '+WORK.name;
+}
+function setPlace(kind,P){
+  if(kind==='home'){HOME=P;store.set('tko_home2',P)}else{WORK=P;store.set('tko_work2',P)}
+  $(kind+'-res').innerHTML='';renderPlaces();updateMarkers();drawRoutes();
+  if(map)map.flyTo([P.lat,P.lon],Math.max(map.getZoom(),11),{duration:.6});
+  S.radar=null;renderModels();renderWater();renderRoutes();analyze();refreshAll();
+}
+function ampFrom(a){return (a.county||a.city_district||a.district||a.town||a.city||'').replace(/^(อำเภอ|เขต|Amphoe )/,'').replace(/ District$/,'')}
+async function pickFromMap(kind,lat,lon){
+  const P={id:'custom',name:'จุดที่เลือกบนแผนที่',area:`${lat.toFixed(4)}, ${lon.toFixed(4)}`,amp:'',lat:+lat.toFixed(5),lon:+lon.toFixed(5)};
+  try{const j=await getJSON(`https://nominatim.openstreetmap.org/reverse?format=json&accept-language=th&zoom=16&lat=${lat}&lon=${lon}`,8000);const a=j.address||{};
+    P.amp=ampFrom(a);const nm=a.amenity||a.school||a.building||a.residential||a.neighbourhood||a.village||a.hamlet||a.road;const sub=a.suburb||a.quarter||a.subdistrict||'';
+    if(nm)P.name=nm;P.area=[sub,P.amp&&('อ.'+P.amp),a.state||a.province].filter(Boolean).join(' ')||P.area}catch(e){}
+  setPlace(kind,P);
+}
+['home','work'].forEach(k=>{
+  $(k+'-sel').addEventListener('change',e=>{const x=PRESETS[k].find(p=>p.id===e.target.value);if(x)setPlace(k,Object.assign({},x))});
+  $(k+'-map').addEventListener('click',()=>{if(setMode===k){endMapMode();return}endMapMode();if(!map||!$('mapfb').hidden){$(k+'-res').innerHTML='<p class="note">แผนที่ใช้ไม่ได้ในหน้านี้ ใช้ช่องค้นหาแทน</p>';return}setMode=k;const b=$(k+'-map');b.classList.add('on');b.textContent='ยกเลิก';$('mapmode').textContent=`แตะบนแผนที่ตรงตำแหน่ง${k==='home'?'บ้าน':'ที่ทำงาน'}`;showTab('rv');$('radar').scrollIntoView({behavior:'smooth',block:'start'})});
+  $(k+'-form').addEventListener('submit',async e=>{e.preventDefault();const q=$(k+'-q').value.trim();if(!q)return;const box=$(k+'-res');box.innerHTML='<p class="note">กำลังค้นหา…</p>';
+    try{const r=await getJSON(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=th&limit=6&addressdetails=1&accept-language=th&viewbox=99.8,14.3,101.2,13.2&q=${encodeURIComponent(q)}`,10000);
+      if(!r.length){box.innerHTML='<p class="note">ไม่พบสถานที่ ลองพิมพ์ชื่อตำบลหรือสถานที่ใกล้เคียง</p>';return}
+      box.innerHTML=r.map((x,i)=>`<button type="button" data-i="${i}">${esc(x.display_name.split(',')[0])}<br><small>${esc(x.display_name.split(',').slice(1,4).join(','))}</small></button>`).join('');
+      box.onclick=ev=>{const b=ev.target.closest('button[data-i]');if(!b)return;const x=r[+b.dataset.i];const a=x.address||{};const amp=ampFrom(a);
+        setPlace(k,{id:'search',name:x.display_name.split(',')[0].trim(),area:[a.suburb||a.quarter||'',amp&&('อ.'+amp),a.state||a.province||''].filter(Boolean).join(' '),amp,lat:+(+x.lat).toFixed(5),lon:+(+x.lon).toFixed(5)})};
+    }catch(err){box.innerHTML='<p class="note">ค้นหาไม่ได้ในหน้านี้ (ต้องเปิดจากไฟล์หรือ GitHub Pages) เลือกจากรายการแทนได้</p>'}});
+});
 
 /* ---------------- refresh loop ---------------- */
 function refreshAll(){loadModels();loadWater();loadRadar()}
@@ -755,7 +855,7 @@ $('logt').addEventListener('click',e=>{const b=e.target.closest('button[data-i]'
 renderLog();
 
 /* ---------------- boot ---------------- */
-S.model=SNAP;S.stations=SNAP.stations;renderModels();renderWater();renderRoutes();analyze();
+renderPlaces();S.model=SNAP;S.stations=SNAP.stations;renderModels();renderWater();renderRoutes();analyze();
 initMap();refreshAll();
 })();
 </script>
