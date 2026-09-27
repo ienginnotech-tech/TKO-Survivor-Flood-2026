@@ -98,7 +98,7 @@ section{margin-top:26px}
 .leaflet-control-attribution{background:rgba(10,20,25,.8)!important;color:var(--faint)!important}
 .leaflet-control-attribution a{color:var(--dim)!important}
 .pin{width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
-.pin.home{background:var(--ok)} .pin.work{background:var(--hi)}
+.pin.home{background:var(--ok)} .pin.work{background:var(--hi)} .pin.canal{background:var(--acc)}
 .btn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13.5px;font-weight:500;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);text-decoration:none;cursor:pointer}
 .btn:hover{border-color:var(--acc);color:var(--acc)}
 .btn.on{border-color:var(--acc);color:var(--acc);background:var(--acc-soft)}
@@ -176,8 +176,9 @@ table.st td.r,table.st th.r{text-align:right}
 .loc-status b{display:block;font-family:var(--mono);font-size:16px}
 .loc-status span{font-size:11.5px;color:var(--dim)}
 /* places */
-.places{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media (max-width:900px){.places{grid-template-columns:1fr}}
+.places{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:1100px){.places{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.places{grid-template-columns:1fr}}
 .place .pname{font-family:var(--display);font-size:20px;font-weight:700;margin-top:2px}
 .place .parea{font-size:13px;color:var(--dim)}
 .prow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -288,6 +289,16 @@ footer{margin-top:28px;font-size:12px;color:var(--faint);border-top:1px solid va
         </div>
         <form class="psearch" id="work-form"><input id="work-q" type="search" placeholder="ค้นหา เช่น อาคาร ห้าง ถนน" aria-label="ค้นหาสถานที่ที่ทำงาน"><button class="btn" type="submit">ค้นหา</button></form>
         <div class="presults" id="work-res"></div>
+      </div>
+      <div class="panel place" id="pl-canal">
+        <div class="label">จุดเฝ้าระวังคลอง/แม่น้ำ</div>
+        <div class="pname" id="canal-name">—</div><div class="parea" id="canal-area">—</div>
+        <div class="prow">
+          <select id="canal-sel" aria-label="เลือกจุดเฝ้าระวังคลอง"></select>
+          <button class="btn" type="button" id="canal-map">แตะบนแผนที่</button>
+        </div>
+        <form class="psearch" id="canal-form"><input id="canal-q" type="search" placeholder="ค้นหา เช่น ชื่อคลอง สะพาน วัดริมน้ำ" aria-label="ค้นหาจุดเฝ้าระวังคลอง"><button class="btn" type="submit">ค้นหา</button></form>
+        <div class="presults" id="canal-res"></div>
       </div>
     </div>
   </section>
@@ -420,7 +431,7 @@ footer{margin-top:28px;font-size:12px;color:var(--faint);border-top:1px solid va
         <p class="note">วัดจุดเดิมทุกครั้ง เช่น ขอบรั้ว จะเห็นว่าน้ำขึ้นหรือลง</p>
         <form class="log" id="logf">
           <div class="f"><label for="lv">ระดับน้ำ (ซม.)</label><input id="lv" type="number" min="0" max="300" step="1" placeholder="เช่น 15" required></div>
-          <div class="f"><label for="lp">จุดที่วัด</label><select id="lp"><option>คลองมหาสวัสดิ์ หน้าบ้าน</option><option>ถนนหน้าบ้าน</option><option>ในรั้วบ้าน</option><option>ในตัวบ้าน</option><option>ถนนเข้าหมู่บ้าน</option></select></div>
+          <div class="f"><label for="lp">จุดที่วัด</label><select id="lp"><option value="canal" id="lp-canal-opt">คลองมหาสวัสดิ์ หน้าบ้าน</option><option>ถนนหน้าบ้าน</option><option>ในรั้วบ้าน</option><option>ในตัวบ้าน</option><option>ถนนเข้าหมู่บ้าน</option></select></div>
           <button class="btn" type="submit">บันทึก</button>
         </form>
         <table class="logtbl" id="logt"></table>
@@ -509,11 +520,14 @@ const PRESETS={
   {id:'mega',name:'เมกาบางนา',area:'อ.บางพลี จ.สมุทรปราการ',amp:'บางพลี',lat:13.6468,lon:100.6802},
   {id:'silom',name:'สีลม',area:'เขตบางรัก กรุงเทพฯ',amp:'บางรัก',lat:13.7290,lon:100.5340},
   {id:'siam',name:'สยาม',area:'เขตปทุมวัน กรุงเทพฯ',amp:'ปทุมวัน',lat:13.7456,lon:100.5347},
-  {id:'bkk-airport',name:'สนามบินสุวรรณภูมิ',area:'อ.บางพลี จ.สมุทรปราการ',amp:'บางพลี',lat:13.6900,lon:100.7501}]
+  {id:'bkk-airport',name:'สนามบินสุวรรณภูมิ',area:'อ.บางพลี จ.สมุทรปราการ',amp:'บางพลี',lat:13.6900,lon:100.7501}],
+ canal:[
+  {id:'mahasawat-khaerai',name:'คลองมหาสวัสดิ์ หน้าบ้าน',area:'ต.แคราย อ.กระทุ่มแบน จ.สมุทรสาคร (ปรับตำแหน่งให้ตรงจุดจริงได้)',amp:'กระทุ่มแบน',lat:13.64666,lon:100.32451}]
 };
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let HOME=store.get('tko_home2',PRESETS.home[0]);
 let WORK=store.get('tko_work2',PRESETS.work[0]);
+let CANAL=store.get('tko_canal2',PRESETS.canal[0]);
 
 const ROUTES=[
   {id:'r1',nm:'ทางด่วนเฉลิมมหานคร',via:'พระราม 2 → ดาวคะนอง → ทางด่วนขั้นที่ 1 → ด่านบางนา',km:'~42 กม.',color:'#3FC1E0',
@@ -648,7 +662,8 @@ function renderWater(){
 }
 
 /* ---------------- radar ---------------- */
-let map=null,frames=[],layers=[],cur=0,timer=null,routeLayers=[],homeMk=null,workMk=null,setMode=null;
+let map=null,frames=[],layers=[],cur=0,timer=null,routeLayers=[],homeMk=null,workMk=null,canalMk=null,setMode=null;
+const PLACE_KEYS=['home','work','canal'];
 const CLS_TX=['ไม่มีฝน','ฝนเบา','ฝนปานกลาง','ฝนหนัก','ฝนหนักมาก'];
 function initMap(){
   if(!window.L){$('mapfb').hidden=false;setSrc('s-radar','err','เรดาร์ · เปิดไม่ได้');return false}
@@ -659,6 +674,7 @@ function initMap(){
   const icon=c=>L.divIcon({className:'',html:`<div class="pin ${c}"></div>`,iconSize:[16,16],iconAnchor:[8,8]});
   homeMk=L.marker([HOME.lat,HOME.lon],{icon:icon('home')}).addTo(map).bindTooltip('',{direction:'top'});
   workMk=L.marker([WORK.lat,WORK.lon],{icon:icon('work')}).addTo(map).bindTooltip('',{direction:'top'});
+  canalMk=L.marker([CANAL.lat,CANAL.lon],{icon:icon('canal')}).addTo(map).bindTooltip('',{direction:'top'});
   updateMarkers();
   map.on('click',e=>{if(!setMode)return;const kind=setMode;endMapMode();pickFromMap(kind,e.latlng.lat,e.latlng.lng)});
   drawRoutes();
@@ -676,8 +692,8 @@ function drawRoutes(){
 }
 $('showroutes').classList.add('on');$('showroutes').textContent='ซ่อนเส้นทาง';
 $('showroutes').addEventListener('click',()=>{const b=$('showroutes');b.classList.toggle('on');b.textContent=b.classList.contains('on')?'ซ่อนเส้นทาง':'แสดงเส้นทาง';drawRoutes()});
-function updateMarkers(){if(!homeMk)return;homeMk.setLatLng([HOME.lat,HOME.lon]).setTooltipContent('บ้าน · '+HOME.name);workMk.setLatLng([WORK.lat,WORK.lon]).setTooltipContent('ที่ทำงาน · '+WORK.name)}
-function endMapMode(){setMode=null;['home','work'].forEach(k=>{const b=$(k+'-map');b.classList.remove('on');b.textContent='แตะบนแผนที่'});$('mapmode').textContent='จุดเขียว = บ้าน · จุดส้ม = ที่ทำงาน · เปลี่ยนพื้นที่ได้ที่ “พื้นที่ที่ติดตาม” ด้านบน'}
+function updateMarkers(){if(!homeMk)return;homeMk.setLatLng([HOME.lat,HOME.lon]).setTooltipContent('บ้าน · '+HOME.name);workMk.setLatLng([WORK.lat,WORK.lon]).setTooltipContent('ที่ทำงาน · '+WORK.name);canalMk.setLatLng([CANAL.lat,CANAL.lon]).setTooltipContent('จุดเฝ้าระวังคลอง · '+CANAL.name)}
+function endMapMode(){setMode=null;PLACE_KEYS.forEach(k=>{const b=$(k+'-map');b.classList.remove('on');b.textContent='แตะบนแผนที่'});$('mapmode').textContent='จุดเขียว = บ้าน · จุดส้ม = ที่ทำงาน · จุดฟ้า = จุดเฝ้าระวังคลอง · เปลี่ยนพื้นที่ได้ที่ “พื้นที่ที่ติดตาม” ด้านบน'}
 
 async function loadRadar(){
   if(!map)return;
@@ -746,7 +762,7 @@ async function analyzeRadar(host,past){
   const eta=(p)=>{const nh=nearestHeavy(G1,p,2,80);if(!nh)return null;const o={d:nh.d};if(R.v&&nh.d>2){const ux=(p.lon-nh.lon)*111.32*Math.cos(p.lat*Math.PI/180)/nh.d,uy=(p.lat-nh.lat)*110.57/nh.d;const close=R.v.vx*ux+R.v.vy*uy;if(close>3)o.eta=nh.d/close*60}return o};
   R.nh=eta(HOME);R.nw=eta(WORK);
   R.routes=activeRoutes().map(r=>{const pts=routePts(r);const samp=[];for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1];const n=Math.max(1,Math.round(km(a[0],a[1],b[0],b[1])/2));for(let k=0;k<n;k++){const t=k/n;samp.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}}samp.push(pts[pts.length-1]);const cs=samp.map(p=>at(G1,p[0],p[1],1));return {max:Math.max(...cs),wet:cs.filter(c=>c>=1).length/cs.length,heavy:cs.filter(c=>c>=3).length/cs.length}});
-  R.grid=G1;S.radar=R;renderRadarSide();renderRoutes();analyze();checkLocationRisk();
+  R.grid=G1;S.radar=R;renderRadarSide();renderRoutes();renderCanalCard();analyze();checkLocationRisk();
 }
 function intens(c){return `<span class="i${c}">${CLS_TX[c]}</span>`}
 function renderRadarSide(){
@@ -810,11 +826,16 @@ function analyze(){
   mk('บ้าน',`${HOME.name} · ${HOME.area}`,HOME,10,(why,add)=>{
     const ctx=near(HOME,25,30).filter(s=>s.km>10&&s.pct>=100&&!isStale(s.dt));
     if(ctx.length)why.push(`ข้อมูลประกอบ (ไม่นับในระดับความเสี่ยง): พื้นที่อื่นห่างออกไปมีลำน้ำล้นตลิ่ง ${ctx.slice(0,2).map(s=>`${s.n} อ.${s.a.split(' ')[0]} ${s.km.toFixed(0)} กม.`).join(', ')}`);
+    const off=nearestOfficial(CANAL,10);
+    if(off&&off.pct>=90){add(off.pct>=100?1:1);why.push(`${CANAL.name}: สถานีทางการใกล้สุด ${off.n} ${off.pct.toFixed(0)}% ห่าง ${off.km.toFixed(1)} กม.`)}
+    const rc=S.radar&&S.radar.grid?at(S.radar.grid,CANAL.lat,CANAL.lon,1):null;
+    if(rc!=null&&rc>=3){add(1);why.push(`${CANAL.name}: เรดาร์จับฝน${CLS_TX[rc]}ตรงจุดนี้`)}
     const cr=canalReadings();
     if(cr.length){const last=cr[cr.length-1];const age=(Date.now()-last.t)/3600000;const df=canalTrend();
-      if(age<=6){if(df!=null&&df>=3){add(1);why.push(`คลองมหาสวัสดิ์หน้าบ้าน (บันทึกของคุณ): ขึ้น ${df} ซม. เมื่อ ${age<1?Math.round(age*60)+' นาทีก่อน':age.toFixed(0)+' ชม.ก่อน'} — เพิ่มความเสี่ยง`)}
-      else why.push(`คลองมหาสวัสดิ์หน้าบ้าน (บันทึกของคุณ): ${last.v} ซม. เมื่อ ${age<1?Math.round(age*60)+' นาทีก่อน':age.toFixed(0)+' ชม.ก่อน'}`)}
-      else why.push('บันทึกคลองมหาสวัสดิ์หน้าบ้านเก่ากว่า 6 ชม. บันทึกใหม่เพื่อให้การวิเคราะห์แม่นขึ้น')}
+      if(age<=6){if(df!=null&&df>=3){add(1);why.push(`${CANAL.name} (บันทึกของคุณ): ขึ้น ${df} ซม. เมื่อ ${age<1?Math.round(age*60)+' นาทีก่อน':age.toFixed(0)+' ชม.ก่อน'} — เพิ่มความเสี่ยง`)}
+      else why.push(`${CANAL.name} (บันทึกของคุณ): ${last.v} ซม. เมื่อ ${age<1?Math.round(age*60)+' นาทีก่อน':age.toFixed(0)+' ชม.ก่อน'}`)}
+      else why.push(`บันทึกที่ ${CANAL.name} เก่ากว่า 6 ชม. บันทึกใหม่เพื่อให้การวิเคราะห์แม่นขึ้น`)}
+    else why.push(`${CANAL.name}: ยังไม่มีบันทึกของคุณที่จุดนี้`);
   });
   mk('ที่ทำงาน',`${WORK.name} · ${WORK.area}`,WORK,10,(why,add)=>{
     if(WORK.id==='bitec'&&SNAP_AGE()<36){add(1);why.push('รายงานเช้า 27 ก.ย.: บางนา-ตราด แยกบางนาขาออก น้ำขัง 15–20 ซม. และสุขุมวิท 101/1')}
@@ -839,43 +860,55 @@ function analyze(){
 }
 function SNAP_AGE(){return (Date.now()-new Date('2026-09-27T11:05:00+07:00').getTime())/3600000}
 
-/* ---------------- manual canal watch (no official gauge nearby) ---------------- */
-function canalReadings(){return log.filter(d=>d.p==='คลองมหาสวัสดิ์ หน้าบ้าน').sort((a,b)=>a.t-b.t)}
+/* ---------------- pinned canal watch point ---------------- */
+function canalReadings(){return log.filter(d=>d.p==='canal').sort((a,b)=>a.t-b.t)}
 function canalTrend(){const r=canalReadings();if(r.length<2)return null;const df=r[r.length-1].v-r[r.length-2].v;return df}
+function nearestOfficial(p,maxKm){if(!S.stations)return null;const list=S.stations.map(s=>Object.assign({},s,{km:km(p.lat,p.lon,s.lat,s.lon)})).filter(s=>s.km<=maxKm&&!isStale(s.dt)).sort((a,b)=>a.km-b.km);return list[0]||null}
 function renderCanalCard(){
   const box=$('canal-card');if(!box)return;
-  const r=canalReadings();
-  if(!r.length){box.innerHTML=`<b>คลองมหาสวัสดิ์ (หน้าบ้าน)</b>ไม่มีสถานีวัดระดับน้ำของทางการที่คลองนี้ บันทึกระดับน้ำที่เห็นเองได้ในช่อง “บันทึกระดับน้ำหน้าบ้าน” ด้านล่าง เลือกหัวข้อ “คลองมหาสวัสดิ์ หน้าบ้าน” ระบบจะติดตามแนวโน้มให้`;return}
-  const last=r[r.length-1];const df=canalTrend();const age=(Date.now()-last.t)/3600000;
-  const trTx=df==null?'ยังมีจุดเดียว':df>0?`<span class="up">▲ ขึ้น ${df} ซม.</span>`:df<0?`<span class="down">▼ ลง ${-df} ซม.</span>`:'<span class="flat">ทรงตัว</span>';
-  box.innerHTML=`<b>คลองมหาสวัสดิ์ (หน้าบ้าน) · จากบันทึกของคุณ</b><div class="cv">${last.v} ซม.</div>${trTx} · บันทึกเมื่อ ${age<1?Math.round(age*60)+' นาทีก่อน':age.toFixed(0)+' ชม.ก่อน'}${age>6?' <span class="stale">(ควรบันทึกใหม่)</span>':''}`;
+  const rc=S.radar&&S.radar.grid?at(S.radar.grid,CANAL.lat,CANAL.lon,1):null;
+  const off=nearestOfficial(CANAL,10);
+  const r=canalReadings();const last=r[r.length-1];const df=canalTrend();
+  let logTx='ยังไม่มีบันทึกที่จุดนี้ — บันทึกได้ในช่อง “บันทึกระดับน้ำหน้าบ้าน” ด้านล่าง เลือกหัวข้อที่ตรงกับจุดนี้';
+  if(last){const age=(Date.now()-last.t)/3600000;const trTx=df==null?'':df>0?` <span class="up">▲ ขึ้น ${df} ซม.</span>`:df<0?` <span class="down">▼ ลง ${-df} ซม.</span>`:' <span class="flat">ทรงตัว</span>';
+    logTx=`บันทึกล่าสุดของคุณ: <b>${last.v} ซม.</b>${trTx} เมื่อ ${age<1?Math.round(age*60)+' นาทีก่อน':age.toFixed(0)+' ชม.ก่อน'}${age>6?' <span class="stale">(ควรบันทึกใหม่)</span>':''}`}
+  box.innerHTML=`<b>${esc(CANAL.name)} · ${esc(CANAL.area)}</b>
+    <div class="cv">${rc==null?'—':CLS_TX[rc]}</div>
+    <div class="note" style="margin:0 0 6px">ฝนตรงจุดนี้ตอนนี้ (จากเรดาร์)${S.radar?' · '+hhmm(S.radar.time)+' น.':''}</div>
+    ${off?`<div class="note" style="margin:0 0 6px">สถานีทางการใกล้สุด: ${esc(off.n)} ${off.pct.toFixed(0)}% ห่าง ${off.km.toFixed(1)} กม.</div>`:'<div class="note" style="margin:0 0 6px">ไม่มีสถานีวัดของทางการในรัศมี 10 กม. ของจุดนี้</div>'}
+    <div class="note" style="margin:0">${logTx}</div>
+    <div style="margin-top:8px"><button class="btn" type="button" id="canal-repin">ย้ายจุดเฝ้าระวังนี้</button></div>`;
+  const b=$('canal-repin');if(b)b.addEventListener('click',()=>{$('canal-map').click();$('places').scrollIntoView({behavior:'smooth',block:'start'})});
 }
 
 /* ---------------- places ---------------- */
+const PLACE_LABEL={home:'บ้าน',work:'ที่ทำงาน',canal:'จุดเฝ้าระวังคลอง'};
+function placeOf(k){return k==='home'?HOME:k==='work'?WORK:CANAL}
 function renderPlaces(){
-  ['home','work'].forEach(k=>{const P=k==='home'?HOME:WORK;$(k+'-name').textContent=P.name;$(k+'-area').textContent=P.area||`${P.lat.toFixed(4)}, ${P.lon.toFixed(4)}`;
+  PLACE_KEYS.forEach(k=>{const P=placeOf(k);$(k+'-name').textContent=P.name;$(k+'-area').textContent=P.area||`${P.lat.toFixed(4)}, ${P.lon.toFixed(4)}`;
     const sel=$(k+'-sel');sel.innerHTML=PRESETS[k].map(x=>`<option value="${x.id}">${esc(x.name)} · ${esc(x.area)}</option>`).join('')+(PRESETS[k].some(x=>x.id===P.id)?'':`<option value="__cur">${esc(P.name)} (ที่เลือกเอง)</option>`);sel.value=PRESETS[k].some(x=>x.id===P.id)?P.id:'__cur'});
   $('brand-sub').textContent=`บ้าน: ${HOME.name} · ที่ทำงาน: ${WORK.name}`;
   $('rl-home').textContent='บ้าน · '+HOME.name;$('rl-work').textContent='ที่ทำงาน · '+WORK.name;
   $('st-home-h').textContent='รอบบ้าน · '+HOME.name;$('st-work-h').textContent='รอบที่ทำงาน · '+WORK.name;
+  const lpOpt=$('lp-canal-opt');if(lpOpt)lpOpt.textContent=CANAL.name;
 }
 function setPlace(kind,P){
-  if(kind==='home'){HOME=P;store.set('tko_home2',P)}else{WORK=P;store.set('tko_work2',P)}
+  if(kind==='home'){HOME=P;store.set('tko_home2',P)}else if(kind==='work'){WORK=P;store.set('tko_work2',P)}else{CANAL=P;store.set('tko_canal2',P)}
   $(kind+'-res').innerHTML='';renderPlaces();updateMarkers();drawRoutes();
   if(map)map.flyTo([P.lat,P.lon],Math.max(map.getZoom(),11),{duration:.6});
-  S.radar=null;renderModels();renderWater();renderRoutes();analyze();refreshAll();
+  S.radar=null;renderModels();renderWater();renderRoutes();renderCanalCard();analyze();refreshAll();
 }
 function ampFrom(a){return (a.county||a.city_district||a.district||a.town||a.city||'').replace(/^(อำเภอ|เขต|Amphoe )/,'').replace(/ District$/,'')}
 async function pickFromMap(kind,lat,lon){
-  const P={id:'custom',name:'จุดที่เลือกบนแผนที่',area:`${lat.toFixed(4)}, ${lon.toFixed(4)}`,amp:'',lat:+lat.toFixed(5),lon:+lon.toFixed(5)};
+  const P={id:'custom',name:kind==='canal'?'จุดคลองที่เลือกบนแผนที่':'จุดที่เลือกบนแผนที่',area:`${lat.toFixed(4)}, ${lon.toFixed(4)}`,amp:'',lat:+lat.toFixed(5),lon:+lon.toFixed(5)};
   try{const j=await getJSON(`https://nominatim.openstreetmap.org/reverse?format=json&accept-language=th&zoom=16&lat=${lat}&lon=${lon}`,8000);const a=j.address||{};
-    P.amp=ampFrom(a);const nm=a.amenity||a.school||a.building||a.residential||a.neighbourhood||a.village||a.hamlet||a.road;const sub=a.suburb||a.quarter||a.subdistrict||'';
+    P.amp=ampFrom(a);const nm=a.waterway||a.amenity||a.school||a.building||a.residential||a.neighbourhood||a.village||a.hamlet||a.road;const sub=a.suburb||a.quarter||a.subdistrict||'';
     if(nm)P.name=nm;P.area=[sub,P.amp&&('อ.'+P.amp),a.state||a.province].filter(Boolean).join(' ')||P.area}catch(e){}
   setPlace(kind,P);
 }
-['home','work'].forEach(k=>{
+PLACE_KEYS.forEach(k=>{
   $(k+'-sel').addEventListener('change',e=>{const x=PRESETS[k].find(p=>p.id===e.target.value);if(x)setPlace(k,Object.assign({},x))});
-  $(k+'-map').addEventListener('click',()=>{if(setMode===k){endMapMode();return}endMapMode();if(!map||!$('mapfb').hidden){$(k+'-res').innerHTML='<p class="note">แผนที่ใช้ไม่ได้ในหน้านี้ ใช้ช่องค้นหาแทน</p>';return}setMode=k;const b=$(k+'-map');b.classList.add('on');b.textContent='ยกเลิก';$('mapmode').textContent=`แตะบนแผนที่ตรงตำแหน่ง${k==='home'?'บ้าน':'ที่ทำงาน'}`;showTab('rv');$('radar').scrollIntoView({behavior:'smooth',block:'start'})});
+  $(k+'-map').addEventListener('click',()=>{if(setMode===k){endMapMode();return}endMapMode();if(!map||!$('mapfb').hidden){$(k+'-res').innerHTML='<p class="note">แผนที่ใช้ไม่ได้ในหน้านี้ ใช้ช่องค้นหาแทน</p>';return}setMode=k;const b=$(k+'-map');b.classList.add('on');b.textContent='ยกเลิก';$('mapmode').textContent=`แตะบนแผนที่ตรงตำแหน่ง${PLACE_LABEL[k]}`;showTab('rv');$('radar').scrollIntoView({behavior:'smooth',block:'start'})});
   $(k+'-form').addEventListener('submit',async e=>{e.preventDefault();const q=$(k+'-q').value.trim();if(!q)return;const box=$(k+'-res');box.innerHTML='<p class="note">กำลังค้นหา…</p>';
     try{const r=await getJSON(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=th&limit=6&addressdetails=1&accept-language=th&viewbox=99.8,14.3,101.2,13.2&q=${encodeURIComponent(q)}`,10000);
       if(!r.length){box.innerHTML='<p class="note">ไม่พบสถานที่ ลองพิมพ์ชื่อตำบลหรือสถานที่ใกล้เคียง</p>';return}
@@ -978,7 +1011,7 @@ function prog(){const n=cl.querySelectorAll('input:checked').length;$('prog').st
 cl.addEventListener('change',e=>{checked[e.target.id]=e.target.checked;store.set('tko_check',checked);prog()});prog();
 let log=store.get('tko_log',[]);
 function renderLog(){$('logempty').hidden=log.length>0;const rows=log.map((d,i)=>({d,i})).reverse().slice(0,8);let trend='';if(log.length>1){const df=log[log.length-1].v-log[log.length-2].v;trend=df>0?`<caption style="text-align:left" class="up">น้ำขึ้น +${df} ซม. จากครั้งก่อน</caption>`:df<0?`<caption style="text-align:left" class="down">น้ำลง ${df} ซม. จากครั้งก่อน</caption>`:''}
-  $('logt').innerHTML=trend+rows.map(({d,i})=>`<tr><td class="num">${fmtT(new Date(d.t))}</td><td>${esc(d.p)}</td><td class="r num"><b>${d.v}</b> ซม.</td><td class="r"><button type="button" data-i="${i}">ลบ</button></td></tr>`).join('')}
+  $('logt').innerHTML=trend+rows.map(({d,i})=>`<tr><td class="num">${fmtT(new Date(d.t))}</td><td>${esc(d.p==='canal'?CANAL.name:d.p)}</td><td class="r num"><b>${d.v}</b> ซม.</td><td class="r"><button type="button" data-i="${i}">ลบ</button></td></tr>`).join('')}
 $('logf').addEventListener('submit',e=>{e.preventDefault();const v=parseInt($('lv').value,10);if(isNaN(v))return;log.push({t:Date.now(),v,p:$('lp').value});store.set('tko_log',log);$('lv').value='';renderLog();renderCanalCard();analyze()});
 $('logt').addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(!b)return;log.splice(+b.dataset.i,1);store.set('tko_log',log);renderLog();renderCanalCard();analyze()});
 renderLog();renderCanalCard();
