@@ -333,8 +333,9 @@ footer{margin-top:28px;font-size:12px;color:var(--faint);border-top:1px solid va
         </div>
         <div class="fallback" id="mapfb" hidden>
           <div>
-            <h3>แผนที่สดเปิดไม่ได้ในหน้านี้</h3>
-            <p>หน้าเว็บที่แชร์ผ่าน claude.ai ไม่อนุญาตให้โหลดภาพแผนที่จากเว็บอื่น เปิดไฟล์ <b>TKO-Survivor-Flood-2026.html</b> ที่ดาวน์โหลดไว้ใน Chrome เพื่อดูเรดาร์เคลื่อนไหวและการวิเคราะห์สด</p>
+            <h3 id="mapfb-h">แผนที่สดเปิดไม่ได้ในหน้านี้</h3>
+            <p id="mapfb-p">กำลังตรวจสอบสาเหตุ…</p>
+            <button class="btn" type="button" id="mapfb-retry" style="margin-bottom:8px">ลองโหลดแผนที่อีกครั้ง</button>
             <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
               <a class="btn" href="https://www.rainviewer.com/map.html?loc=13.72,100.45,9&oFa=0&oC=1&oU=0&oCS=1&oF=0&oAP=1&c=3&o=83&lm=1&layer=radar&sm=1&sn=1" target="_blank" rel="noopener">RainViewer ↗</a>
               <a class="btn" href="https://www.windy.com/-Weather-radar-radar?radar,13.72,100.45,9" target="_blank" rel="noopener">Windy ↗</a>
@@ -356,7 +357,7 @@ footer{margin-top:28px;font-size:12px;color:var(--faint);border-top:1px solid va
         </div>
         <div class="panel">
           <div class="label">แผนที่</div>
-          <p class="note" id="mapmode" style="margin-top:4px">จุดเขียว = บ้าน · จุดส้ม = ที่ทำงาน · เปลี่ยนพื้นที่ได้ที่ “พื้นที่ที่ติดตาม” ด้านบน</p>
+          <p class="note" id="mapmode" style="margin-top:4px">จุดเขียว = บ้าน · จุดส้ม = ที่ทำงาน · จุดฟ้า = จุดเฝ้าระวังคลอง · เปลี่ยนพื้นที่ได้ที่ “พื้นที่ที่ติดตาม” ด้านบน</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
             <button class="btn" type="button" id="showroutes">แสดงเส้นทาง</button>
           </div>
@@ -665,12 +666,31 @@ function renderWater(){
 let map=null,frames=[],layers=[],cur=0,timer=null,routeLayers=[],homeMk=null,workMk=null,canalMk=null,setMode=null;
 const PLACE_KEYS=['home','work','canal'];
 const CLS_TX=['ไม่มีฝน','ฝนเบา','ฝนปานกลาง','ฝนหนัก','ฝนหนักมาก'];
-function initMap(){
-  if(!window.L){$('mapfb').hidden=false;setSrc('s-radar','err','เรดาร์ · เปิดไม่ได้');return false}
+function mapEnv(){return /claude/i.test(location.hostname)||location.protocol==='blob:'}
+function initMap(isRetry){
+  if(map){try{map.remove()}catch(e){}map=null}
+  if(!window.L){
+    $('mapfb-h').textContent='โหลดไลบรารีแผนที่ไม่สำเร็จ';
+    $('mapfb-p').textContent='สคริปต์แผนที่ (Leaflet) โหลดไม่สำเร็จ อาจเป็นเพราะเครือข่ายบล็อกหรือหลุดการเชื่อมต่อ กด "ลองโหลดแผนที่อีกครั้ง" หรือเปิดผ่านลิงก์ด้านล่างแทน';
+    $('mapfb').hidden=false;setSrc('s-radar','err','เรดาร์ · เปิดไม่ได้');return false
+  }
+  $('mapfb').hidden=true;$('player').hidden=false;$('legend').hidden=false;
   map=L.map('map',{zoomControl:true,attributionControl:true}).setView([13.70,100.45],10);
   const base=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:14,attribution:'© OpenStreetMap © CARTO · Radar © RainViewer'}).addTo(map);
-  let ok=0,bad=0;base.on('tileload',()=>ok++);base.on('tileerror',()=>bad++);
-  setTimeout(()=>{if(ok===0){$('mapfb').hidden=false;$('player').hidden=true;$('legend').hidden=true;setSrc('s-radar','err','เรดาร์ · เปิดในไฟล์ที่ดาวน์โหลด')}},7000);
+  let ok=0,bad=0;
+  base.on('tileload',()=>{ok++;if(!$('mapfb').hidden){$('mapfb').hidden=true;$('player').hidden=false;$('legend').hidden=false}});
+  base.on('tileerror',()=>bad++);
+  setTimeout(()=>{
+    if(ok===0){
+      const onClaude=mapEnv();
+      $('mapfb-h').textContent=onClaude?'แผนที่สดเปิดไม่ได้ในหน้าพรีวิวนี้':'แผนที่สดโหลดไม่สำเร็จ';
+      $('mapfb-p').textContent=onClaude
+        ?'หน้านี้เปิดผ่านลิงก์พรีวิวของ claude.ai ซึ่งไม่อนุญาตให้โหลดภาพแผนที่จากเว็บอื่น (ข้อจำกัดของแพลตฟอร์ม ไม่ใช่บั๊กของไฟล์) เปิดผ่านลิงก์ GitHub Pages ของคุณ หรือไฟล์ index.html ที่ดาวน์โหลดไว้แทน แผนที่จะใช้งานได้ปกติ'
+        :'เครือข่ายอาจบล็อกการโหลดภาพแผนที่ (CARTO/RainViewer) ลองกด "ลองโหลดแผนที่อีกครั้ง" หรือตรวจสอบการเชื่อมต่ออินเทอร์เน็ต';
+      $('mapfb').hidden=false;$('player').hidden=true;$('legend').hidden=true;
+      setSrc('s-radar','err',onClaude?'เรดาร์ · เปิดผ่าน GitHub Pages/ไฟล์ที่ดาวน์โหลด':'เรดาร์ · โหลดไม่สำเร็จ');
+    }
+  },9000);
   const icon=c=>L.divIcon({className:'',html:`<div class="pin ${c}"></div>`,iconSize:[16,16],iconAnchor:[8,8]});
   homeMk=L.marker([HOME.lat,HOME.lon],{icon:icon('home')}).addTo(map).bindTooltip('',{direction:'top'});
   workMk=L.marker([WORK.lat,WORK.lon],{icon:icon('work')}).addTo(map).bindTooltip('',{direction:'top'});
@@ -1018,6 +1038,7 @@ renderLog();renderCanalCard();
 
 /* ---------------- boot ---------------- */
 renderPlaces();S.model=SNAP;S.stations=SNAP.stations;renderModels();renderWater();renderRoutes();analyze();
+$('mapfb-retry').addEventListener('click',()=>{$('mapfb-p').textContent='กำลังลองโหลดแผนที่อีกครั้ง…';setTimeout(()=>initMap(true),150)});
 initMap();refreshAll();
 })();
 </script>
